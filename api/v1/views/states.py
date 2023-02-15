@@ -18,9 +18,9 @@ def get_states():
                  methods=["GET"], Strict_slashes=False)
 def get_states(state_id):
     """Retrieves a State on id"""
-    if state_id is None:
-        abort(404)
     state = storage.get("State", state_id)
+    if state is None:
+        abort(404)
     return jsonify({state.to_dict()})
 
 
