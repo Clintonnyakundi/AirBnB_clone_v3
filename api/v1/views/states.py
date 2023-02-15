@@ -26,7 +26,7 @@ def get_states(state_id):
 
 
 @app_views.route("/states/<string:state_id>",
-                 method=["DELETE"], strict_slashes=False)
+                 methods=["DELETE"], strict_slashes=False)
 def delete_states(state_id):
     """Deletes a State object on id"""
     state = storage.get("State", state_id)
@@ -37,7 +37,7 @@ def delete_states(state_id):
     return jsonify({})
 
 
-@app_views.route("/states", methods=["POST"], strict_sladhes=False)
+@app_views.route('/states/', methods=['POST'], strict_slashes=False)
 def post_states():
     """Creates a State"""
     if not request.get_json():
