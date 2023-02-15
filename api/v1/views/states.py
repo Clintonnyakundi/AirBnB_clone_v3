@@ -37,7 +37,7 @@ def delete_states(state_id):
     return jsonify({})
 
 
-@app_views.route('/states/', methods=['POST'], strict_slashes=False)
+@app_views.route('/states/', methods=["POST"], strict_slashes=False)
 def post_states():
     """Creates a State"""
     if not request.get_json():
@@ -48,3 +48,19 @@ def post_states():
     state = State(**new_state)
     state.save()
     return make_response(jsonify({state.to_dict()}), 201)
+
+
+@app_views.route("/states/<string:state_id>",
+                 methods=["PUT"], strict_slashes=False)
+def put_states(state_id):
+    """Updates a State object"""
+    state = storage.get("State", state_id)
+    if state is None:
+        abort(404)
+    if not request.get_json():
+        return make_response(jsonify({'error': 'Not a JSON'}), 400)
+    for attr, val in request.get_json().items():
+        if attr not in ['id', 'created_at', 'updated_at']:
+            setattr(state, attr, val)
+    state.save()
+    return jsonify({state.to_dict()})
