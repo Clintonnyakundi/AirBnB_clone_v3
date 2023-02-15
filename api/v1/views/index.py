@@ -23,6 +23,7 @@ def status():
     if request.method == 'GET':
         return (jsonify({"status": "OK"}))
 
+
 @app_views.route("/stats", methods=["GET"])
 def hbnbStats():
     """Retrieves the number of each objects"""
