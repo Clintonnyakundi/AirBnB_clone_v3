@@ -4,7 +4,8 @@ View for State objects that handles all default RESTFul API actions
 """
 from api.v1.views import app_views
 from models import storage
-from flask import jsonify, abort
+from flask import jsonify, abort, request, make_response
+from models.state import State
 
 
 @app_views.route("/states", methods=["GET"], strict_slashes=False)
@@ -34,3 +35,16 @@ def delete_states(state_id):
     state.delete()
     storage.save()
     return jsonify({})
+
+
+@app_views.route("/states", methods=["POST"], strict_sladhes=False)
+def post_states():
+    """Creates a State"""
+    if not request.get_json():
+        return make_response(jsonify({'error': 'Not a JSON'}), 400)
+    new_state = request.get_json()
+    if 'name' not in new_state:
+        return make_response(jsonify({'error': 'Missing name'}), 400)
+    state = State(**new_state)
+    state.save()
+    return make_response(jsonify({state.to_dict()}), 201)
