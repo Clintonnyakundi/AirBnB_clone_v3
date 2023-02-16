@@ -4,7 +4,7 @@ Creates view for City objects
 """
 
 from api.v1.views import app_views
-from flask import Flask, jsonify, make_response, request, abort
+from flask import jsonify, make_response, request, abort
 from models.city import City
 from models import storage
 
@@ -17,7 +17,7 @@ def getCities(state_id):
     """
     state = storage.get('State', state_id)
     if state is None:
-        abort(404)
+        return abort(404)
 
     allCities = list()
     for city in state.cities:
@@ -32,7 +32,7 @@ def getCity(city_id):
     """
     city = storage.get('City', city_id)
     if city is None:
-        abort(404)
+        return abort(404)
 
     return jsonify(city.to_dict())
 
@@ -45,7 +45,7 @@ def delete(city_id):
     """
     city = storage.get('City', city_id)
     if city is None:
-        abort(404)
+        return abort(404)
 
     storage.delete(city)
     storage.save()
@@ -59,16 +59,16 @@ def create(state_id):
     """
     Creates new City object
     """
-    if not request.get_json:
-        abort(400, "Not a JSON")
+    if not request.get_json():
+        return make_response(jsonify({"Error": "Not a JSON"}), 400)
 
-    new_city = request.get_json
+    new_city = request.get_json()
     if 'name' not in new_city.keys():
-        abort(400, "Missing name")
+        return make_response(jsonify({"Error": "Missing name"}), 400)
 
     state = storage.get('State', state_id)
     if state is None:
-        abort(404)
+        return abort(404)
 
     content['state_id'] = state_id
     city = City(**new_city)
@@ -85,12 +85,12 @@ def update(city_id):
     """
     city = storage.get('City', city_id)
     if city is None:
-        abort(404)
+        return abort(404)
 
-    if not request.get_json:
-        abort(400, "Not a JSON")
+    if not request.get_json():
+        return make_response(jsonify({"Error": "Not a JSON"}), 400)
 
-    for k, v in request.get_json.items():
+    for k, v in request.get_json().items():
         if k not in ['id', 'state_id', 'created_at', 'updated_at']:
             setattr(city, k, v)
 
