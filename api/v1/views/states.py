@@ -12,7 +12,7 @@ from models.state import State
 def get_states():
     """list of all State objects"""
     states = [state.to_dict() for state in storage.all("State").value()]
-    return jsonify({states})
+    return jsonify(states)
 
 
 @app_views.route("/states/<string:state_id>",
@@ -22,7 +22,7 @@ def get_states(state_id):
     state = storage.get("State", state_id)
     if state is None:
         abort(404)
-    return jsonify({state.to_dict()})
+    return jsonify(state.to_dict())
 
 
 @app_views.route("/states/<string:state_id>",
@@ -47,7 +47,7 @@ def post_states():
         return make_response(jsonify({'error': 'Missing name'}), 400)
     state = State(**new_state)
     state.save()
-    return make_response(jsonify({state.to_dict()}), 201)
+    return make_response(jsonify(state.to_dict()), 201)
 
 
 @app_views.route("/states/<string:state_id>",
@@ -63,4 +63,4 @@ def put_states(state_id):
         if attr not in ['id', 'created_at', 'updated_at']:
             setattr(state, attr, val)
     state.save()
-    return jsonify({state.to_dict()})
+    return jsonify(state.to_dict())
