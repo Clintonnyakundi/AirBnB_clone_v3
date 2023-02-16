@@ -25,7 +25,7 @@ def readUser(user_id=None):
     """
     user = storage.get('User', user_id)
     if user is None:
-        return abort(404)
+        abort(404)
 
     return jsonify(user.to_dict())
 
@@ -40,7 +40,7 @@ def deleteUser(user_id=None):
         storage.delete(user)
         storage.save()
         return make_response(jsonify({}), 200)
-    return abort(404)
+    abort(404)
 
 
 @app_views.route("/users", methods=['POST'], strict_slashes=False)
@@ -49,13 +49,13 @@ def createUser():
     Creates a User
     """
     if not request.get_json():
-        return make_response(jsonify({"Error": "Not a JSON"}), 400)
+        abort(400, "Not a JSON")
 
     if 'email' not in request.get_json():
-        return make_response(jsonify({"Error": "Missing email"}), 400)
+        abort(400, "Missing email")
 
     if 'password' not in request.get_json():
-        return make_response(jsonify({"Error": "Missing password"}), 400)
+        abort(400, "Missing password")
 
     dict_body = request.get_json()
     new_user = User(**dict_body)
@@ -70,7 +70,7 @@ def updateUser(user_id=None):
     Updates a User object
     """
     if not request.get_json():
-        return make_response(jsonify({"Error": "Not a JSON"}), 400)
+        abort(400, "Not a JSON")
 
     dict_body = request.get_json()
     user = storage.get('User', user_id)
@@ -81,4 +81,4 @@ def updateUser(user_id=None):
                 setattr(user, k, v)
 
         return make_response(jsonify(user.to_dict()), 200)
-    return abort(404)
+    abort(404)

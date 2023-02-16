@@ -17,7 +17,7 @@ def getCities(state_id):
     """
     state = storage.get('State', state_id)
     if state is None:
-        return abort(404)
+        abort(404)
 
     allCities = list()
     for city in state.cities:
@@ -32,7 +32,7 @@ def getCity(city_id):
     """
     city = storage.get('City', city_id)
     if city is None:
-        return abort(404)
+        abort(404)
 
     return jsonify(city.to_dict())
 
@@ -45,7 +45,7 @@ def delete(city_id):
     """
     city = storage.get('City', city_id)
     if city is None:
-        return abort(404)
+        abort(404)
 
     storage.delete(city)
     storage.save()
@@ -60,15 +60,15 @@ def create(state_id):
     Creates new City object
     """
     if not request.get_json():
-        return make_response(jsonify({"Error": "Not a JSON"}), 400)
+        abort(400, "Not a JSON")
 
     new_city = request.get_json()
     if 'name' not in new_city.keys():
-        return make_response(jsonify({"Error": "Missing name"}), 400)
+        abort(400, "Missing name")
 
     state = storage.get('State', state_id)
     if state is None:
-        return abort(404)
+        abort(404)
 
     content['state_id'] = state_id
     city = City(**new_city)
@@ -85,10 +85,10 @@ def update(city_id):
     """
     city = storage.get('City', city_id)
     if city is None:
-        return abort(404)
+        abort(404)
 
     if not request.get_json():
-        return make_response(jsonify({"Error": "Not a JSON"}), 400)
+        abort(400, "Not a JSON")
 
     for k, v in request.get_json().items():
         if k not in ['id', 'state_id', 'created_at', 'updated_at']:
