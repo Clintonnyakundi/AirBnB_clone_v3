@@ -30,4 +30,4 @@ def hbnbStats():
     return_dict = {}
     for key, value in hbnb_objects.items():
         return_dict[key] = storage.count(value)
-    return jsonify({return_dict})
+    return jsonify(return_dict)
