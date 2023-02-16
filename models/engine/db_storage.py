@@ -42,14 +42,19 @@ class DBStorage:
 
     def all(self, cls=None):
         """query on the current database session"""
-        new_dict = {}
-        for clss in classes:
-            if cls is None or cls is classes[clss] or cls is clss:
-                objs = self.__session.query(classes[clss]).all()
-                for obj in objs:
-                    key = obj.__class__.__name__ + '.' + obj.id
-                    new_dict[key] = obj
-        return (new_dict)
+        if not self.__session:
+            self.reload()
+        objects = {}
+        if isinstance(cls, str):
+            cls = classes.get(cls, None)
+        if cls:
+            for obj in self.__session.query(cls):
+                objects[obj.__class__.__name__ + '.' + obj.id] = obj
+        else:
+            for cls in classes.values():
+                for obj in self.__session.query(cls):
+                    objects[obj.__class__.__name__ + '.' + obj.id] = obj
+        return objects
 
     def new(self, obj):
         """add the object to the current database session"""
@@ -61,15 +66,17 @@ class DBStorage:
 
     def delete(self, obj=None):
         """delete from the current database session obj if not None"""
-        if obj is not None:
+        if not self.__session:
+            self.reload()
+        if obj:
             self.__session.delete(obj)
 
     def reload(self):
         """reloads data from the database"""
+        session_factory = sessionmaker(bind=self.__engine,
+                                       expire_on_commit=False)
         Base.metadata.create_all(self.__engine)
-        sess_factory = sessionmaker(bind=self.__engine, expire_on_commit=False)
-        Session = scoped_session(sess_factory)
-        self.__session = Session
+        self.__session = scoped_session(session_factory)
 
     def close(self):
         """call remove() method on the private session attribute"""
@@ -77,13 +84,13 @@ class DBStorage:
 
     def get(self, cls, id):
         """Gets an object"""
-        if cls is not None and isinstance(cls, str) and cls in classes and \
-                id is not None and isinstance(id, str):
+        if cls is not None and isinstance(cls, str) and id is not None and\
+           isinstance(id, str) and cls in classes:
             cls = classes[cls]
             object = self.__session.query(cls).filter(cls.id == id).first()
-            return (object)
+            return object
         else:
-            return (None)
+            return None
 
     def count(self, cls=None):
         """Count the number of objects in storage"""
