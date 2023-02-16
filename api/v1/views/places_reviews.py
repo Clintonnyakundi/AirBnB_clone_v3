@@ -2,7 +2,7 @@
 """
 Create view for Review object that handles all default RESTFul API actions
 """
-from api.vi.views import app_views
+from api.v1.views import app_views
 from flask import jsonify, request, make_response, abort
 from models import storage
 from models.place import Place
@@ -23,7 +23,7 @@ def list_reviews(place_id=None):
     abort(404)
 
 
-@app_views.route("/reviews/<review_id>", methods=['GET']
+@app_views.route("/reviews/<review_id>", methods=['GET'],
                  strict_slashes=False)
 def readReview(review_id=None):
     """

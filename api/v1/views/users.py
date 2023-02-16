@@ -5,8 +5,8 @@ Create view for User object to handle all default RESTFUL API actions
 
 from api.v1.views import app_views
 from flask import jsonify, request, make_response, abort
-from modules import storage
-from modules.user import User
+from models import storage
+from models.user import User
 
 
 @app_views.route("/users", methods=['GET'], strict_slashes=False)
