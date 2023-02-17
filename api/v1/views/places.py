@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 """
-Create a new view for Place objects that handles all default RESTFul API actions
+Create a new view for Place objects that handles RESTFul API actions
 """
 from api.v1.views import app_views
 from models import storage
@@ -80,3 +80,32 @@ def put_place(place_id):
             setattr(place, attr, val)
     place.save()
     return jsonify(place.to_dict())
+
+
+@app_views.route('/places_search', methods=['POST'], strict_slashes=False)
+def post_places_search():
+    """Searches for a place"""
+    search_term = request.get_json()
+    if search_term is not None:
+        states = search_term.get('states', [])
+        cities = search_term.get('cities', [])
+        amenities = search_term.get('amenities', [])
+        amenity_objects = [
+            storage.get(
+                'Amenity',
+                amenity_id) for amenity_id in amenities if storage.get(
+                'Amenity',
+                amenity_id)]
+        if states == cities == []:
+            places = storage.all('Place').values()
+        else:
+            places = [place for state_id in states
+                      for city in storage.get('State', state_id).cities
+                      if city.id not in cities
+                      for place in storage.get('City', city.id).places]
+
+        confirmed_places = [place.to_dict() for place in places if all(
+            amenity in place.amenities for amenity in amenity_objects)]
+        return jsonify(confirmed_places)
+    else:
+        return make_response(jsonify({'error': 'Not a JSON'}), 400)
