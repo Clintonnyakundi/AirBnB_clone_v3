@@ -70,7 +70,7 @@ def create(state_id):
     if state is None:
         abort(404)
 
-    content['state_id'] = state_id
+    new_city['state_id'] = state_id
     city = City(**new_city)
     storage.new(city)
     storage.save()
