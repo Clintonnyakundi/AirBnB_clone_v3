@@ -3,18 +3,16 @@
 Contains the class DBStorage
 """
 
-import models
+import os
+from models.base_model import Base
 from models.amenity import Amenity
-from models.base_model import BaseModel, Base
 from models.city import City
 from models.place import Place
-from models.review import Review
 from models.state import State
+from models.review import Review
 from models.user import User
-from os import getenv
-import sqlalchemy
 from sqlalchemy import create_engine
-from sqlalchemy.orm import scoped_session, sessionmaker
+from sqlalchemy.orm import sessionmaker, scoped_session
 
 classes = {"Amenity": Amenity, "City": City,
            "Place": Place, "Review": Review, "State": State, "User": User}
@@ -27,17 +25,13 @@ class DBStorage:
 
     def __init__(self):
         """Instantiate a DBStorage object"""
-        HBNB_MYSQL_USER = getenv('HBNB_MYSQL_USER')
-        HBNB_MYSQL_PWD = getenv('HBNB_MYSQL_PWD')
-        HBNB_MYSQL_HOST = getenv('HBNB_MYSQL_HOST')
-        HBNB_MYSQL_DB = getenv('HBNB_MYSQL_DB')
-        HBNB_ENV = getenv('HBNB_ENV')
-        self.__engine = create_engine('mysql+mysqldb://{}:{}@{}/{}'.
-                                      format(HBNB_MYSQL_USER,
-                                             HBNB_MYSQL_PWD,
-                                             HBNB_MYSQL_HOST,
-                                             HBNB_MYSQL_DB))
-        if HBNB_ENV == "test":
+        user = os.getenv('HBNB_MYSQL_USER')
+        passwd = os.getenv('HBNB_MYSQL_PWD')
+        host = os.getenv('HBNB_MYSQL_HOST')
+        database = os.getenv('HBNB_MYSQL_DB')
+        self.__engine = create_engine('mysql+mysqldb://{}:{}@{}/{}'
+                                      .format(user, passwd, host, database))
+        if os.getenv('HBNB_ENV') == 'test':
             Base.metadata.drop_all(self.__engine)
 
     def all(self, cls=None):
@@ -45,7 +39,7 @@ class DBStorage:
         if not self.__session:
             self.reload()
         objects = {}
-        if isinstance(cls, str):
+        if type(cls) == str:
             cls = classes.get(cls, None)
         if cls:
             for obj in self.__session.query(cls):
@@ -84,8 +78,8 @@ class DBStorage:
 
     def get(self, cls, id):
         """Gets an object"""
-        if cls is not None and isinstance(cls, str) and id is not None and\
-           isinstance(id, str) and cls in classes:
+        if cls is not None and type(cls) is str and id is not None and\
+           type(id) is str and cls in classes:
             cls = classes[cls]
             object = self.__session.query(cls).filter(cls.id == id).first()
             return object
@@ -95,7 +89,7 @@ class DBStorage:
     def count(self, cls=None):
         """Count the number of objects in storage"""
         obj_count = 0
-        if isinstance(cls, str) and cls in classes:
+        if type(cls) == str and cls in classes:
             cls = classes[cls]
             obj_count = self.__session.query(cls).count()
         elif cls is None:
