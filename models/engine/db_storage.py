@@ -39,7 +39,7 @@ class DBStorage:
         if not self.__session:
             self.reload()
         objects = {}
-        if type(cls) == str:
+        if isinstance(cls, str):
             cls = classes.get(cls, None)
         if cls:
             for obj in self.__session.query(cls):
@@ -78,8 +78,8 @@ class DBStorage:
 
     def get(self, cls, id):
         """Gets an object"""
-        if cls is not None and type(cls) is str and id is not None and\
-           type(id) is str and cls in classes:
+        if cls is not None and isinstance(cls, str) and id is not None and\
+           isinstance(id, str) and cls in classes:
             cls = classes[cls]
             object = self.__session.query(cls).filter(cls.id == id).first()
             return object
@@ -89,7 +89,7 @@ class DBStorage:
     def count(self, cls=None):
         """Count the number of objects in storage"""
         obj_count = 0
-        if type(cls) == str and cls in classes:
+        if isinstance(cls, str) and cls in classes:
             cls = classes[cls]
             obj_count = self.__session.query(cls).count()
         elif cls is None:
