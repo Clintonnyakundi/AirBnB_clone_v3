@@ -48,16 +48,16 @@ def createUser():
     """
     Creates a User
     """
-    if not request.get_json():
+    dict_body = request.get_json()
+    if not dict_body:
         abort(400, "Not a JSON")
 
-    if 'email' not in request.get_json():
+    if 'email' not in dict_body:
         abort(400, "Missing email")
 
-    if 'password' not in request.get_json():
+    if 'password' not in dict_body:
         abort(400, "Missing password")
 
-    dict_body = request.get_json()
     new_user = User(**dict_body)
     storage.new(new_user)
     storage.save()
