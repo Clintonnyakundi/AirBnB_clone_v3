@@ -7,6 +7,7 @@ from flask import Flask, jsonify, make_response
 from models import storage
 from os import getenv
 from flask_cors import CORS
+import os
 
 app = Flask(__name__)
 
@@ -19,6 +20,7 @@ app.register_blueprint(app_views)
 
 # create a CORS instance allowing: /* for 0.0.0.0
 cors = CORS(app, resources={"/*": {"origins": "0.0.0.0"}})
+
 
 @app.teardown_appcontext
 def teardown(exc):
@@ -39,4 +41,5 @@ def not_found(error):
 
 if __name__ == '__main__':
     # starts Flask app
-    app.run(host=host, port=port)
+    app.run(host=os.getenv('HBNB_API_HOST', '0.0.0.0'),
+            port=int(os.getenv('HBNB_API_PORT', '5000')))
