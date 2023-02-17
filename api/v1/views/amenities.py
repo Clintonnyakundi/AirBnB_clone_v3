@@ -52,7 +52,7 @@ def post_amenity():
 @app_views.route('/amenities/<string:amenity_id>', methods=['PUT'],
                  strict_slashes=False)
 def put_amenity(amenity_id):
-    """update an amenity"""
+    """Update an amenity"""
     amenity = storage.get("Amenity", amenity_id)
     if amenity is None:
         abort(404)
