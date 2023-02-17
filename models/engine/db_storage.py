@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 """
-Contains the class DBStorage
+Database storage engine using SQLAlchemy with a mysql+mysqldb database
+connection.
 """
 
 import os
@@ -13,18 +14,23 @@ from models.review import Review
 from models.user import User
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, scoped_session
-
-classes = {"Amenity": Amenity, "City": City,
-           "Place": Place, "Review": Review, "State": State, "User": User}
+name2class = {
+    'Amenity': Amenity,
+    'City': City,
+    'Place': Place,
+    'State': State,
+    'Review': Review,
+    'User': User
+}
 
 
 class DBStorage:
-    """interaacts with the MySQL database"""
+    """Database Storage"""
     __engine = None
     __session = None
 
     def __init__(self):
-        """Instantiate a DBStorage object"""
+        """Initializes the object"""
         user = os.getenv('HBNB_MYSQL_USER')
         passwd = os.getenv('HBNB_MYSQL_PWD')
         host = os.getenv('HBNB_MYSQL_HOST')
@@ -35,64 +41,64 @@ class DBStorage:
             Base.metadata.drop_all(self.__engine)
 
     def all(self, cls=None):
-        """query on the current database session"""
+        """returns a dictionary of all the objects present"""
         if not self.__session:
             self.reload()
         objects = {}
         if isinstance(cls, str):
-            cls = classes.get(cls, None)
+            cls = name2class.get(cls, None)
         if cls:
             for obj in self.__session.query(cls):
                 objects[obj.__class__.__name__ + '.' + obj.id] = obj
         else:
-            for cls in classes.values():
+            for cls in name2class.values():
                 for obj in self.__session.query(cls):
                     objects[obj.__class__.__name__ + '.' + obj.id] = obj
         return objects
 
-    def new(self, obj):
-        """add the object to the current database session"""
-        self.__session.add(obj)
-
-    def save(self):
-        """commit all changes of the current database session"""
-        self.__session.commit()
-
-    def delete(self, obj=None):
-        """delete from the current database session obj if not None"""
-        if not self.__session:
-            self.reload()
-        if obj:
-            self.__session.delete(obj)
-
     def reload(self):
-        """reloads data from the database"""
+        """reloads objects from the database"""
         session_factory = sessionmaker(bind=self.__engine,
                                        expire_on_commit=False)
         Base.metadata.create_all(self.__engine)
         self.__session = scoped_session(session_factory)
 
+    def new(self, obj):
+        """creates a new object"""
+        self.__session.add(obj)
+
+    def save(self):
+        """saves the current session"""
+        self.__session.commit()
+
+    def delete(self, obj=None):
+        """deletes an object"""
+        if not self.__session:
+            self.reload()
+        if obj:
+            self.__session.delete(obj)
+
     def close(self):
-        """call remove() method on the private session attribute"""
+        """Dispose of current session if active"""
         self.__session.remove()
 
     def get(self, cls, id):
-        """Gets an object"""
+        """Retrieve an object"""
         if cls is not None and isinstance(cls, str) and id is not None and\
-           isinstance(id, str) and cls in classes:
-            cls = classes[cls]
-            object = self.__session.query(cls).filter(cls.id == id).first()
-            return object
+           isinstance(id, str) and cls in name2class:
+            cls = name2class[cls]
+            result = self.__session.query(cls).filter(cls.id == id).first()
+            return result
         else:
             return None
 
     def count(self, cls=None):
-        """Count the number of objects in storage"""
-        obj_count = 0
-        if isinstance(cls, str) and cls in classes:
-            cls = classes[cls]
-            obj_count = self.__session.query(cls).count()
+        """Count number of objects in storage"""
+        total = 0
+        if isinstance(cls, str) and cls in name2class:
+            cls = name2class[cls]
+            total = self.__session.query(cls).count()
         elif cls is None:
-            for cls in classes.values():
-                obj_count += self.__session.query(cls).count()
-        return obj_count
+            for cls in name2class.values():
+                total += self.__session.query(cls).count()
+        return total
