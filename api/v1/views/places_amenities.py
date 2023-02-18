@@ -14,9 +14,12 @@ from models import storage
 def get_place_amenities(place_id):
     """Get amenity information on a specified place"""
     place = storage.get("Place", place_id)
-    amenities_ids = place.amenities
     if place is None:
         abort(404)
+    if os.getenv('HBNB_TYPE_STORAGE') == 'db':
+        amenities_ids = place.amenities
+    else:
+        amenities_ids = place.amenity_ids
     amenities = [amenity.to_dict() for amenity in amenities_ids]
     return jsonify(amenities)
 
@@ -27,9 +30,12 @@ def delete_place_amenity(place_id, amenity_id):
     """Deletes an amenity data from a place"""
     place = storage.get("Place", place_id)
     amenity = storage.get("Amenity", amenity_id)
-    place_amenities_ids = place.amenity_ids
     if place is None or amenity is None:
         abort(404)
+    if os.getenv('HBNB_TYPE_STORAGE') == 'db':
+        place_amenities_ids = place.amenities
+    else:
+        place_amenities_ids = place.amenity_ids
     if amenity not in place_amenities_ids:
         abort(404)
     place_amenities_ids.remove(amenity)
@@ -45,7 +51,10 @@ def post_place_amenity(place_id, amenity_id):
     amenity = storage.get("Amenity", amenity_id)
     if place is None or amenity is None:
         abort(404)
-    place_amenities = place.amenity_ids
+    if os.getenv('HBNB_TYPE_STORAGE') == 'db':
+        place_amenities = place.amenities
+    else:
+        place_amenities = place.amenity_ids
     if amenity in place_amenities:
         return jsonify(amenity.to_dict())
     place_amenities.append(amenity)
